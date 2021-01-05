@@ -43,7 +43,8 @@ class COCO(Dataset):
 class SKLARGE(Dataset):
     def __init__(self, rootDir, pathList):
         self.rootDir = rootDir
-        self.listData =  pd.read_csv(pathList, dtype=str, delimiter=' ')
+        self.listData =  pd.read_csv(pathList, dtype=str, delimiter=',')
+        self.new_size = []
 
     def __len__(self):
         return len(self.listData)
@@ -54,7 +55,13 @@ class SKLARGE(Dataset):
         targetName = self.listData.iloc[i, 1]
         # process the images
         transf = transforms.ToTensor()
-        inputImage = transf(Image.open(self.rootDir + inputName).convert('RGB'))
+        inputImage = Image.open(inputName).convert('RGB')
+
+        if len(self.new_size) == 0:
+          self.new_size = inputImage.size
+        
+        inputImage = inputImage.resize(self.new_size)
+        inputImage = transf(inputImage)
         tensorBlue = (inputImage[0:1, :, :] * 255.0) - 104.00698793
         tensorGreen = (inputImage[1:2, :, :] * 255.0) - 116.66876762
         tensorRed = (inputImage[2:3, :, :] * 255.0) - 122.67891434
@@ -75,7 +82,7 @@ class SKLARGE(Dataset):
         scaleTarget = torch.from_numpy(scale).float()
         quantiseTarget = torch.from_numpy(quantise)
         """
-        targetImage = transf(Image.open(self.rootDir + targetName).convert('L'))*255.0
+        targetImage = transf(Image.open(targetName).convert('L').resize(self.new_size))*255.0
         return inputImage, targetImage
 
 class SKLARGE_RAW(Dataset):
