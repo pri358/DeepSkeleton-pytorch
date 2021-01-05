@@ -30,9 +30,9 @@ def obtain_scale_map(loc_map, scale_map):
     result = torch.cat([probability_map, scale_map],1)
     return result
 
-rootDirImgTest = "SK-LARGE/images/test/"
-rootNms = "output-sklarge-001-nms/"
-testOutput = "output-sklarge-001/"
+rootDirImgTest = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/images/test/"
+# rootNms = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/output-sklarge-001-nms/"
+testOutput = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/segment/"
 
 test = os.listdir(rootDirImgTest)
 
@@ -40,9 +40,9 @@ os.makedirs(testOutput, exist_ok=True)
 
 print("Loading trained network...")
 
-networkPath = "LMSDS-001-061105.pth"
+networkPath = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/FSDS-SKsmall.pth" #Path of the network trained
 
-nnet = LMSDS()
+nnet = FSDS()  #CHANGE TO LMSDS WHEN TESTING THAT
 dic = torch.load(networkPath)
 dicli = list(dic.keys())
 new = {}
@@ -53,6 +53,7 @@ for k in nnet.state_dict():
     j += 1
 
 nnet.load_state_dict(new)
+nnet = nnet.cuda()
 
 print("Generating test results...")
 soft = torch.nn.Softmax(dim=1)
@@ -66,9 +67,8 @@ for inputName in tqdm(test):
     tensorGreen = (inputImage[1:2, :, :] * 255.0) - 116.66876762
     tensorRed = (inputImage[2:3, :, :] * 255.0) - 122.67891434
     image = torch.cat([ tensorBlue, tensorGreen, tensorRed ], 0)
-    image = Variable(image, requires_grad=False).unsqueeze_(0)
+    image = Variable(image, requires_grad=False).unsqueeze_(0).cuda()
     sideOuts = nnet(image)
-    """
     skeleton = grayTrans((1 - soft(sideOuts[4])[0][0]).unsqueeze_(0))
     skeleton.save(testOutput + inputName)
     """
@@ -86,4 +86,5 @@ for inputName in tqdm(test):
         y = i
         draw.ellipse((x-r, y-r, x+r, y+r), fill='white')
     segment.save(testOutput + inputName)
+    """
     
