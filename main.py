@@ -29,26 +29,26 @@ parser.add_argument('--LMSDS', default=False, help='Decide if you want to use FS
 parser.add_argument('--continue_train', default=False, help='Decide if you want to restart training.', action='store_true')
 args = parser.parse_args()
 
-image_dir = "images-coco"
+image_dir = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/output"
 os.makedirs(image_dir, exist_ok=True)
 arch_name = "FSDS"
 if args.LMSDS:
     arch_name = "LMSDS"
 
-model_save_name = arch_name + "-COCO.pth"
+model_save_name = arch_name + "-aug.pth"
 
 print("Importing datasets...")
 
-rootDir = "SK-LARGE/"
-trainListPath = "SK-LARGE/aug_data/train_pair.lst"
+rootDir = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/"
+trainListPath = "/content/drive/MyDrive/IP - 7th sem/SK-SMALL/SK506/aug_data/pairList.txt"
 
-#trainDS = SKLARGE(rootDir, trainListPath)
-trainDS = COCO("../train2017/",True)
+trainDS = SKLARGE(rootDir, trainListPath)
+# trainDS = COCO("../train2017/",True)
 train = DataLoader(trainDS, shuffle=True, batch_size=4, num_workers=4)
 
 print("Initializing network...")
 
-modelPath = "model/vgg16.pth"
+modelPath = "/content/drive/MyDrive/IP - 7th sem/SK-LARGE/vgg16.pth" #ADD PATH for VGG 
 
 if args.LMSDS:
     nnet = torch.nn.DataParallel(initialize_lmsds(modelPath, args.continue_train, model_save_name)).cuda()
@@ -185,7 +185,7 @@ def apply_quantization(scale):
 
 print("Training started")
 
-epochs = 40
+epochs = 5
 i = 0
 dispInterval = 1000
 lossAcc = [0.0]*10
